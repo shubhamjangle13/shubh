@@ -1,0 +1,48 @@
+%% Set up parameters
+Lx = 1; % length of domain in x-direction
+Ly = 1; % length of domain in y-direction
+Nx = 50; % number of grid points in x-direction
+Ny = 50; % number of grid points in y-direction
+dx = Lx/Nx; % grid spacing in x-direction
+dy = Ly/Ny; % grid spacing in y-direction
+k = 0.1; % thermal conductivity of fluid
+rho = 1000; % density of fluid
+mu = 1; % viscosity of the fluid (Pa.s)
+cp = 4184; % specific heat of fluid
+U = 0; % velocity of fluid
+v = 0;
+T1 = 0; % temperature at left boundary
+T2 = 0; % temperature at right boundary
+T3 = 0; % temperature at top boundary
+T4 = 1; % temperature at bottom boundary
+tol = 1e-6; % convergence tolerance
+maxit = 10000; % maximum number of iterations
+%% Set up initial conditions
+T = zeros(Ny,Nx); % temperature matrix
+T(:,1) = T1; % left boundary
+T(:,Nx) = T2; % right boundary
+T(1,:) = T3; % top boundary
+T(Ny,:) = T4; % bottom boundary
+
+%% Solve using iterative method
+for it = 1:maxit
+    Told = T;
+    for j = 2:Ny-1
+        for i = 2:Nx-1
+            T(j,i) = (1/4)*(T(j,i-1)+T(j,i+1)+T(j-1,i)+T(j+1,i))+...
+                (U*dx/(2*k))*(T(j,i+1)-T(j,i-1)); % finite difference equation
+        end
+    end
+    err = norm(T(:)-Told(:))/norm(Told(:)); % relative error
+    if err < tol % convergence check
+        break
+    end
+end
+
+%% Plot results
+[X,Y] = meshgrid(dx/2:dx:Lx-dx/2,dy/2:dy:Ly-dy/2);
+contourf(X,Y,T,'LineStyle','none');
+colorbar;
+xlabel('x');
+ylabel('y');
+title('Temperature Distribution');
